@@ -1,0 +1,109 @@
+[
+  {
+    "id": "T1",
+    "name": "Create available reservation",
+    "reset_before_test": true,
+    "script": [
+      "Reserve a table for four on Friday, August 14 at 6 PM.",
+      "Jordan Lee, 310-555-0199.",
+      "No notes.",
+      "Yes, confirm."
+    ],
+    "expected": [
+      "Check availability",
+      "Confirm critical details",
+      "Create exactly one reservation"
+    ]
+  },
+  {
+    "id": "T2",
+    "name": "Unavailable time",
+    "reset_before_test": true,
+    "script": [
+      "Book four people Friday, August 14 at 6:30 PM.",
+      "I can do 7:30 PM instead.",
+      "Taylor Kim, 424-555-0188.",
+      "Confirm."
+    ],
+    "expected": [
+      "Do not invent availability",
+      "Offer API alternatives",
+      "Book 19:30"
+    ]
+  },
+  {
+    "id": "T3",
+    "name": "Correction and barge-in",
+    "reset_before_test": true,
+    "script": [
+      "Saturday, August 15 at 6:30 PM for two.",
+      "Casey Brown, 213-555-0114.",
+      "Interrupt the confirmation: Sorry, make that four people.",
+      "Confirm."
+    ],
+    "expected": [
+      "Stop or yield on interruption",
+      "Use final party size 4",
+      "Create one reservation"
+    ]
+  },
+  {
+    "id": "T4",
+    "name": "Modify existing reservation",
+    "reset_before_test": true,
+    "script": [
+      "Change reservation LUMA-4821.",
+      "Move it to 7:30 PM on the same date and make it four people.",
+      "Confirm."
+    ],
+    "expected": [
+      "Search",
+      "Confirm changes",
+      "PATCH res_existing_4821"
+    ]
+  },
+  {
+    "id": "T5",
+    "name": "Cancel existing reservation",
+    "reset_before_test": true,
+    "script": [
+      "Cancel reservation LUMA-4821.",
+      "Yes, cancel it."
+    ],
+    "expected": [
+      "Search",
+      "Ask for confirmation",
+      "Cancel once"
+    ]
+  },
+  {
+    "id": "T6",
+    "name": "Temporary API failure",
+    "reset_before_test": true,
+    "script": [
+      "Check Sunday, August 16 at 6 PM for two.",
+      "If temporarily unavailable, try once more.",
+      "If it still fails, hand off."
+    ],
+    "expected": [
+      "First availability request receives 503",
+      "Retry at most once",
+      "Never invent a result"
+    ]
+  },
+  {
+    "id": "T7",
+    "name": "Duplicate protection",
+    "reset_before_test": true,
+    "script": [
+      "Book Friday at 8 PM for two.",
+      "Morgan Reed, 310-555-0166.",
+      "Confirm.",
+      "Repeat the create call with the same idempotency key."
+    ],
+    "expected": [
+      "Only one reservation record",
+      "Same response for repeated key"
+    ]
+  }
+]

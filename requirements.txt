@@ -1,0 +1,14 @@
+# Pinned runtime dependencies for the voice agent (reproducible install).
+# Alternatively: `pip install -e ".[dev]"` (see pyproject.toml).
+#
+# Verified working set (Python 3.13):
+pipecat-ai[deepgram,openai,cartesia,silero,webrtc]==1.6.0
+pipecat-ai-prebuilt==1.0.5
+openai==2.47.0
+httpx==0.28.1
+python-dotenv==1.2.2
+pydantic==2.11.4
+
+# --- test tooling (for `pytest` and the scripted eval) ---
+pytest==9.1.1
+pytest-asyncio==1.4.0

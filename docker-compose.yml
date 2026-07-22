@@ -1,0 +1,14 @@
+# The reservation API runs in Docker. The voice agent is run natively (see README)
+# so the browser can reach the microphone and WebRTC media ports without Docker
+# UDP/NAT issues on macOS.
+services:
+  reservation-api:
+    build: ./mock_api
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://localhost:8000/health').status==200 else sys.exit(1)"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s

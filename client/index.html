@@ -1,0 +1,95 @@
+<!doctype html>
+<!--
+  OPTIONAL custom browser client for the Luma Bistro voice agent.
+
+  You do NOT need this file to run the demo: `python -m luma_agent.bot` already
+  serves a prebuilt UI at http://localhost:7860/client. This is a minimal,
+  dependency-free alternative that connects to the same WebRTC offer endpoint
+  (POST /api/offer) using the Pipecat JS client from a CDN (no build step).
+
+  Serve it from the same origin as the agent, or open it directly and point
+  OFFER_URL at your running agent.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Luma Bistro — Voice Reservations</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body { font-family: -apple-system, system-ui, sans-serif; max-width: 32rem;
+             margin: 4rem auto; padding: 0 1rem; text-align: center; }
+      h1 { font-weight: 650; letter-spacing: -0.02em; }
+      p.sub { opacity: 0.7; margin-top: -0.5rem; }
+      button { font-size: 1rem; padding: 0.7rem 1.4rem; border-radius: 0.6rem;
+               border: 1px solid currentColor; background: transparent;
+               cursor: pointer; margin: 0.25rem; }
+      button:disabled { opacity: 0.4; cursor: default; }
+      #status { margin-top: 1.5rem; font-variant-numeric: tabular-nums; opacity: 0.8; }
+      .dot { display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%;
+             background: #bbb; margin-right: 0.4rem; vertical-align: middle; }
+      .dot.on { background: #2ecc71; }
+    </style>
+  </head>
+  <body>
+    <h1>Luma Bistro</h1>
+    <p class="sub">Voice reservations line</p>
+    <div>
+      <button id="connect">Connect</button>
+      <button id="disconnect" disabled>Disconnect</button>
+    </div>
+    <div id="status"><span class="dot"></span>idle</div>
+    <audio id="bot-audio" autoplay></audio>
+
+    <script type="module">
+      import { PipecatClient } from "https://esm.sh/@pipecat-ai/client-js@1.13.0";
+      import { SmallWebRTCTransport } from "https://esm.sh/@pipecat-ai/small-webrtc-transport@1.10.6";
+
+      // Point this at your running agent's offer endpoint.
+      const OFFER_URL = `${location.origin.replace(/\/$/, "")}/api/offer`;
+
+      const audioEl = document.getElementById("bot-audio");
+      const statusEl = document.getElementById("status");
+      const connectBtn = document.getElementById("connect");
+      const disconnectBtn = document.getElementById("disconnect");
+
+      function setStatus(text, on = false) {
+        statusEl.innerHTML = `<span class="dot ${on ? "on" : ""}"></span>${text}`;
+      }
+
+      const client = new PipecatClient({
+        transport: new SmallWebRTCTransport(),
+        enableMic: true,
+        enableCam: false,
+        callbacks: {
+          onConnected: () => setStatus("connected", true),
+          onDisconnected: () => setStatus("idle"),
+          onBotReady: () => setStatus("listening — go ahead", true),
+          // Attach the bot's audio track so you can hear it.
+          onTrackStarted: (track, participant) => {
+            if (participant && participant.local) return;
+            if (track.kind === "audio") audioEl.srcObject = new MediaStream([track]);
+          },
+        },
+      });
+
+      connectBtn.onclick = async () => {
+        connectBtn.disabled = true;
+        setStatus("connecting…");
+        try {
+          await client.connect({ connection_url: OFFER_URL });
+          disconnectBtn.disabled = false;
+        } catch (e) {
+          setStatus("connection failed: " + e.message);
+          connectBtn.disabled = false;
+        }
+      };
+
+      disconnectBtn.onclick = async () => {
+        await client.disconnect();
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+      };
+    </script>
+  </body>
+</html>
