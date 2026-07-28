@@ -89,7 +89,7 @@ The LLM never touches the network directly. Every side effect goes through the *
 |---|---|---|
 | Orchestration | **[Pipecat](https://github.com/pipecat-ai/pipecat) 1.6** | Real-time frame pipeline, VAD turn-taking, native barge-in, metrics, swappable services |
 | Speech-to-Text | **Deepgram** (`nova-2`, streaming) | Low latency + word-error-rate on conversational English |
-| LLM | **OpenAI GPT-4o** | Reliable function calling; `gpt-4o-mini` is a 1-env-var cost swap |
+| LLM | **OpenAI GPT-4o** *or* **Groq** (free) | Reliable function calling; swap via `LLM_PROVIDER` in `.env` — default `.env.example` uses Groq (free, low-latency) |
 | Text-to-Speech | **Cartesia** (Sonic, streaming) | Lowest time-to-first-audio → best perceived latency |
 | Transport | **Self-hosted WebRTC** (SmallWebRTC) | Browser-native, no extra accounts; ships a prebuilt UI |
 | Backend | **FastAPI** reservation service | Availability, reservations CRUD, idempotent writes, handoff |

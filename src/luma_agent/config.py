@@ -63,10 +63,15 @@ class Settings:
         default_factory=lambda: _get_int("API_RETRY_BACKOFF_MS", 250)
     )
 
-    # --- LLM ---------------------------------------------------------------
+    # --- LLM (provider-swappable: "openai" or "groq") ----------------------
     llm_provider: str = field(default_factory=lambda: _get("LLM_PROVIDER", "openai"))
     openai_api_key: str = field(default_factory=lambda: _get("OPENAI_API_KEY"))
     openai_model: str = field(default_factory=lambda: _get("OPENAI_MODEL", "gpt-4o"))
+    # Groq — free, low-latency, OpenAI-compatible LLM (great for real-time voice).
+    groq_api_key: str = field(default_factory=lambda: _get("GROQ_API_KEY"))
+    groq_model: str = field(
+        default_factory=lambda: _get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    )
 
     # --- STT ---------------------------------------------------------------
     stt_provider: str = field(default_factory=lambda: _get("STT_PROVIDER", "deepgram"))
@@ -103,6 +108,8 @@ class Settings:
         missing = []
         if self.llm_provider == "openai" and not self.openai_api_key:
             missing.append("OPENAI_API_KEY")
+        if self.llm_provider == "groq" and not self.groq_api_key:
+            missing.append("GROQ_API_KEY")
         if self.stt_provider == "deepgram" and not self.deepgram_api_key:
             missing.append("DEEPGRAM_API_KEY")
         if self.tts_provider == "cartesia" and not self.cartesia_api_key:

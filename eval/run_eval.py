@@ -226,7 +226,22 @@ SCRIPTED = {
 async def run_llm_scenario(ctx: ToolContext, scenario: dict, rec: TestRecord, model: str) -> None:
     from openai import AsyncOpenAI
 
-    client = AsyncOpenAI()
+    from luma_agent.config import get_settings
+
+    settings = get_settings()
+    if settings.llm_provider == "groq":
+        # Groq is OpenAI-compatible — reuse the OpenAI client against its endpoint.
+        client = AsyncOpenAI(
+            base_url="https://api.groq.com/openai/v1",
+            api_key=settings.groq_api_key,
+            max_retries=5,
+            timeout=60,
+        )
+        model = settings.groq_model
+        throttle_s = 2.5  # stay under Groq free-tier rate limits
+    else:
+        client = AsyncOpenAI(api_key=settings.openai_api_key or None, max_retries=5, timeout=60)
+        throttle_s = 0.0
     tools = openai_tools()
     messages: list[dict] = [{"role": "system", "content": build_system_prompt()}]
     llm_ms: list[float] = []
@@ -234,6 +249,8 @@ async def run_llm_scenario(ctx: ToolContext, scenario: dict, rec: TestRecord, mo
     for turn in scenario["script"]:
         messages.append({"role": "user", "content": turn})
         for _ in range(6):  # cap tool-calling rounds per user turn
+            if throttle_s:
+                await asyncio.sleep(throttle_s)
             t0 = time.perf_counter()
             resp = await client.chat.completions.create(
                 model=model, messages=messages, tools=tools, tool_choice="auto", temperature=0.2

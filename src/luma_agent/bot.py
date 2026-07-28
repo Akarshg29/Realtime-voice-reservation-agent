@@ -44,6 +44,7 @@ from pipecat.processors.aggregators.llm_response_universal import (
 )
 from pipecat.services.cartesia.tts import CartesiaTTSService
 from pipecat.services.deepgram.stt import DeepgramSTTService, LiveOptions
+from pipecat.services.groq.llm import GroqLLMService
 from pipecat.services.openai.llm import OpenAILLMService
 from pipecat.transports.base_transport import BaseTransport, TransportParams
 
@@ -147,7 +148,10 @@ async def run_bot(transport: BaseTransport, runner_args) -> None:
     tts = CartesiaTTSService(
         api_key=settings.cartesia_api_key, voice_id=settings.cartesia_voice_id
     )
-    llm = OpenAILLMService(api_key=settings.openai_api_key, model=settings.openai_model)
+    if settings.llm_provider == "groq":
+        llm = GroqLLMService(api_key=settings.groq_api_key, model=settings.groq_model)
+    else:
+        llm = OpenAILLMService(api_key=settings.openai_api_key, model=settings.openai_model)
 
     for schema in TOOL_SCHEMAS:
         llm.register_function(schema["name"], _make_handler(schema["name"]))

@@ -2,7 +2,7 @@
 # Alternatively: `pip install -e ".[dev]"` (see pyproject.toml).
 #
 # Verified working set (Python 3.13):
-pipecat-ai[deepgram,openai,cartesia,silero,webrtc]==1.6.0
+pipecat-ai[deepgram,openai,cartesia,silero,webrtc,groq]==1.6.0
 pipecat-ai-prebuilt==1.0.5
 openai==2.47.0
 httpx==0.28.1
